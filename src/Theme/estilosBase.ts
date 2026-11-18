@@ -1,0 +1,63 @@
+import { StyleSheet } from 'react-native';
+import { AMARELO, FONTE_TITULO, MARINHO, type Cores } from './themeContext';
+
+/** Estilos compartilhados pelas telas (cards, campos, botões e chips). */
+export const criarEstilosBase = (cores: Cores) =>
+  StyleSheet.create({
+    pagina: { flex: 1, backgroundColor: cores.fundo },
+    conteudo: { padding: 16, paddingBottom: 36 },
+    titulo: { fontSize: 24, fontFamily: FONTE_TITULO, marginBottom: 12 },
+    subtitulo: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
+    textoSecundario: { color: cores.textoSecundario },
+    card: {
+      padding: 14,
+      marginBottom: 12,
+      backgroundColor: cores.superficie,
+      borderWidth: 1,
+      borderColor: cores.borda,
+      borderRadius: 12,
+    },
+    nome: { fontWeight: 'bold', fontSize: 17, marginBottom: 4 },
+    rotulo: { fontWeight: 'bold', marginBottom: 6 },
+    input: {
+      color: cores.texto,
+      backgroundColor: cores.superficie,
+      borderColor: cores.borda,
+      borderWidth: 1,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 10,
+      minHeight: 48,
+    },
+    inputMultilinha: { minHeight: 90, textAlignVertical: 'top' },
+    chips: { marginBottom: 12, flexGrow: 0 },
+    chip: {
+      borderWidth: 1,
+      borderColor: cores.borda,
+      borderRadius: 18,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      marginRight: 8,
+      marginBottom: 6,
+    },
+    chipAtivo: { backgroundColor: MARINHO, borderColor: MARINHO },
+    chipTextoAtivo: { color: '#fff', fontWeight: 'bold' },
+    linhaChips: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 6 },
+    primario: { backgroundColor: MARINHO, padding: 14, borderRadius: 10, minHeight: 48 },
+    destaque: { backgroundColor: AMARELO, padding: 14, borderRadius: 10, minHeight: 48 },
+    destaqueTexto: { color: MARINHO, textAlign: 'center', fontWeight: 'bold' },
+    botaoTexto: { color: '#fff', textAlign: 'center', fontWeight: 'bold' },
+    botaoSecundario: { padding: 12, alignItems: 'center' },
+    acoes: { flexDirection: 'row', gap: 10, marginTop: 10 },
+    bordaBotao: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: cores.primaria,
+      padding: 10,
+      borderRadius: 8,
+    },
+    editar: { textAlign: 'center', color: cores.primaria, fontWeight: 'bold' },
+    perigo: { flex: 1, backgroundColor: '#C62828', padding: 10, borderRadius: 8 },
+    erro: { color: cores.perigo, marginBottom: 10, fontWeight: 'bold' },
+    vazio: { textAlign: 'center', color: cores.textoSecundario, marginTop: 15 },
+  });
