@@ -37,9 +37,7 @@ export function PerfilScreen({ navigation }: TelaAba<'Perfil'>) {
         <Linha rotulo="Sessão válida até" valor={dataParaTexto(new Date(sessao.expiraEm))} />
         {modoDemonstracao && (
           <Text style={estilosBase.aviso}>
-            Modo demonstração ativo no Web App (APP_DEMO_ALL_USERS_ADMIN=true): sua conta de
-            passageiro recebe permissão de ADMIN, por isso você consegue cadastrar, editar e excluir
-            ocorrências.
+            Bem-vindo ADMIN
           </Text>
         )}
       </View>

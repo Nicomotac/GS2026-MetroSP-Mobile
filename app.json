@@ -27,6 +27,15 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-secure-store"]
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "commitHash": "258e59214493476a144e1b4f468531bbe88f7f28",
+      "eas": {
+        "projectId": "74c3a7a3-d390-4c67-821e-83465afbd1ae"
+      }
+    },
+    "owner": "nicxdev"
   }
 }
