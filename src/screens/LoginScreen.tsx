@@ -6,7 +6,7 @@ import { Campo } from '../components/Campo';
 import { TelaComTeclado } from '../components/TelaComTeclado';
 import { useAuth } from '../context/AuthContext';
 import type { TelaPilha } from '../navigation/tipos';
-import { cores, espaco, estilosBase } from '../theme/tema';
+import { cores, espaco, estilosBase, fontes } from '../theme/tema';
 import { mensagemErro } from '../utils/erros';
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,7 +38,11 @@ export function LoginScreen({ navigation }: TelaPilha<'Login'>) {
       <TelaComTeclado>
         <ScrollView contentContainerStyle={estilos.conteudo} keyboardShouldPersistTaps="handled">
           <View style={estilos.topo}>
-            <Image source={require('../../assets/logo.png')} style={estilos.logo} resizeMode="contain" />
+            <Image
+              source={require('../../assets/logo.png')}
+              style={estilos.logo}
+              resizeMode="contain"
+            />
             <Text style={estilos.titulo}>MetroSP Ocorrências</Text>
             <Text style={estilos.subtitulo}>Registre e acompanhe problemas nas estações</Text>
           </View>
@@ -64,8 +68,17 @@ export function LoginScreen({ navigation }: TelaPilha<'Login'>) {
               onSubmitEditing={() => void aoEntrar()}
             />
             {!!erro && <Text style={estilosBase.erro}>{erro}</Text>}
-            <Botao titulo="Entrar" icone="log-in-outline" carregando={enviando} onPress={() => void aoEntrar()} />
-            <Botao titulo="Criar conta de passageiro" variante="secundario" onPress={() => navigation.navigate('Cadastro')} />
+            <Botao
+              titulo="Entrar"
+              icone="log-in-outline"
+              carregando={enviando}
+              onPress={() => void aoEntrar()}
+            />
+            <Botao
+              titulo="Criar conta de passageiro"
+              variante="secundario"
+              onPress={() => navigation.navigate('Cadastro')}
+            />
           </View>
 
           <Botao
@@ -85,6 +98,6 @@ const estilos = StyleSheet.create({
   conteudo: { flexGrow: 1, justifyContent: 'center', padding: espaco.lg, gap: espaco.lg },
   topo: { alignItems: 'center', gap: espaco.xs },
   logo: { width: 120, height: 120, borderRadius: 24, backgroundColor: cores.branco },
-  titulo: { fontSize: 26, fontWeight: '800', color: cores.branco, marginTop: espaco.sm },
-  subtitulo: { fontSize: 14, color: '#C9D3EA', textAlign: 'center' },
+  titulo: { fontSize: 26, fontFamily: fontes.negrito, color: cores.branco, marginTop: espaco.sm },
+  subtitulo: { fontSize: 14, fontFamily: fontes.regular, color: '#C9D3EA', textAlign: 'center' },
 });

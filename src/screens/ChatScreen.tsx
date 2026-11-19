@@ -17,7 +17,7 @@ import { useChat } from '../hooks/useChat';
 import { LIMITE_MENSAGEM, type MensagemTela } from '../model/Chat';
 import type { TelaAba } from '../navigation/tipos';
 import { ocorrenciaService } from '../services/ocorrenciaService';
-import { cores, espaco, estilosBase } from '../theme/tema';
+import { cores, espaco, estilosBase, fontes } from '../theme/tema';
 
 export function ChatScreen({ navigation, route }: TelaAba<'Chat'>) {
   const parametro = route.params?.ocorrenciaId ?? null;
@@ -27,15 +27,22 @@ export function ChatScreen({ navigation, route }: TelaAba<'Chat'>) {
   const listaRef = useRef<FlatList<MensagemTela>>(null);
   const { setOcorrenciaId } = chat;
 
-  // Vindo do detalhe de uma ocorrência: já seleciona o contexto.
+  // Vindo do detalhe de uma ocorrência: seleciona o contexto e limpa o parâmetro,
+  // para a mesma ocorrência poder ser escolhida de novo depois.
   useEffect(() => {
-    if (parametro !== null) setOcorrenciaId(parametro);
-  }, [parametro, setOcorrenciaId]);
+    if (parametro === null) return;
+    setOcorrenciaId(parametro);
+    navigation.setParams({ ocorrenciaId: undefined });
+  }, [parametro, setOcorrenciaId, navigation]);
 
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable accessibilityLabel="Limpar conversa" onPress={chat.limpar} style={estilos.botaoCabecalho}>
+        <Pressable
+          accessibilityLabel="Limpar conversa"
+          onPress={chat.limpar}
+          style={estilos.botaoCabecalho}
+        >
           <Ionicons name="trash-outline" size={22} color={cores.branco} />
         </Pressable>
       ),
@@ -53,10 +60,17 @@ export function ChatScreen({ navigation, route }: TelaAba<'Chat'>) {
     <TelaComTeclado style={estilosBase.tela}>
       <View style={estilos.contexto}>
         <Text style={estilosBase.rotulo}>
-          Contexto: {selecionada ? `#${selecionada.id} ${selecionada.tipoProblema} · ${selecionada.estacao}` : 'pergunta geral'}
+          Contexto:{' '}
+          {selecionada
+            ? `#${selecionada.id} ${selecionada.tipoProblema} · ${selecionada.estacao}`
+            : 'pergunta geral'}
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <Chip rotulo="Geral" ativo={chat.ocorrenciaId === null} onPress={() => setOcorrenciaId(null)} />
+          <Chip
+            rotulo="Geral"
+            ativo={chat.ocorrenciaId === null}
+            onPress={() => setOcorrenciaId(null)}
+          />
           {(ocorrencias.dados ?? []).slice(0, 30).map((o) => (
             <Chip
               key={o.id}
@@ -68,7 +82,8 @@ export function ChatScreen({ navigation, route }: TelaAba<'Chat'>) {
         </ScrollView>
         {chat.chatLivreIndisponivel && chat.ocorrenciaId === null && (
           <Text style={estilosBase.aviso}>
-            Perguntas gerais precisam da rota POST /api/chat na API. Escolha uma ocorrência para usar a orientação de IA.
+            Perguntas gerais precisam da rota POST /api/chat na API. Escolha uma ocorrência para
+            usar a orientação de IA.
           </Text>
         )}
       </View>
@@ -167,6 +182,7 @@ const estilos = StyleSheet.create({
     paddingHorizontal: espaco.lg,
     paddingVertical: 10,
     fontSize: 15,
+    fontFamily: fontes.regular,
     color: cores.texto,
     backgroundColor: cores.fundo,
   },

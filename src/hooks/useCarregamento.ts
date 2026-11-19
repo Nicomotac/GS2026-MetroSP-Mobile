@@ -12,8 +12,12 @@ interface Estado<T> {
  * Busca dados na API sempre que a tela ganha foco (ex.: ao voltar do formulário),
  * com suporte a "puxar para atualizar" e "tentar de novo".
  */
-export function useCarregamento<T>(buscar: () => Promise<T>, chave: string | number = '') {
-  const [estado, setEstado] = useState<Estado<T>>({ dados: undefined, carregando: true, erro: null });
+export function useCarregamento<T>(buscar: () => Promise<T>) {
+  const [estado, setEstado] = useState<Estado<T>>({
+    dados: undefined,
+    carregando: true,
+    erro: null,
+  });
   const [atualizando, setAtualizando] = useState(false);
   const buscarAtual = useRef(buscar);
   const sequencia = useRef(0);
@@ -40,7 +44,7 @@ export function useCarregamento<T>(buscar: () => Promise<T>, chave: string | num
   useFocusEffect(
     useCallback(() => {
       void carregar();
-    }, [carregar, chave]),
+    }, [carregar]),
   );
 
   const tentarDeNovo = useCallback(() => {

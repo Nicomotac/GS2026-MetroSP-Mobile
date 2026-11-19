@@ -6,7 +6,7 @@ import { Botao } from '../components/Botao';
 import { API_URL } from '../config';
 import type { TelaPilha } from '../navigation/tipos';
 import { verificarApi } from '../services/statusService';
-import { cores, espaco, estilosBase } from '../theme/tema';
+import { cores, espaco, estilosBase, fontes } from '../theme/tema';
 import { mensagemErro } from '../utils/erros';
 
 const INTEGRANTES = ['Nicolas Mota · RM561857', 'Caio Kenzo · RM592979'];
@@ -43,8 +43,8 @@ export function SobreScreen(_props: TelaPilha<'Sobre'>) {
       <View style={estilosBase.cartao}>
         <Text style={estilosBase.titulo}>MetroSP Ocorrências</Text>
         <Text style={estilosBase.texto}>
-          Global Solution FIAP 2026/2 (CitizenTech). Passageiros registram e acompanham ocorrências nas estações do metrô
-          e tiram dúvidas com um chatbot de IA.
+          Global Solution FIAP 2026/2 (CitizenTech). Passageiros registram e acompanham ocorrências
+          nas estações do metrô e tiram dúvidas com um chatbot de IA.
         </Text>
         <Text style={estilosBase.rotulo}>Versão</Text>
         <Text style={estilosBase.texto}>{versao}</Text>
@@ -59,9 +59,17 @@ export function SobreScreen(_props: TelaPilha<'Sobre'>) {
         <Text style={[estilosBase.texto, estilos.mono]} selectable>
           {API_URL}
         </Text>
-        <Botao titulo="Testar conexão" icone="pulse-outline" variante="secundario" carregando={testando} onPress={() => void testar()} />
+        <Botao
+          titulo="Testar conexão"
+          icone="pulse-outline"
+          variante="secundario"
+          carregando={testando}
+          onPress={() => void testar()}
+        />
         {resultado && (
-          <Text style={[estilos.resultado, { color: resultado.ok ? cores.sucesso : cores.erro }]}>{resultado.texto}</Text>
+          <Text style={[estilos.resultado, { color: resultado.ok ? cores.sucesso : cores.erro }]}>
+            {resultado.texto}
+          </Text>
         )}
         <Text style={estilosBase.textoSecundario}>
           A chave da OpenAI fica somente no Web App (OPENAI_API_KEY). O app nunca recebe essa chave.
@@ -82,5 +90,5 @@ export function SobreScreen(_props: TelaPilha<'Sobre'>) {
 
 const estilos = StyleSheet.create({
   mono: { fontFamily: Platform.select({ ios: 'Menlo', default: 'monospace' }), fontSize: 13 },
-  resultado: { fontSize: 14, fontWeight: '600' },
+  resultado: { fontSize: 14, fontFamily: fontes.semi },
 });

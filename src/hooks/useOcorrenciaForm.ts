@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Estacao, Funcionario } from '../model/Cadastros';
 import type { Ocorrencia, OcorrenciaPayload } from '../model/Ocorrencia';
 import type { Sessao } from '../model/Sessao';
 import { estacaoService, funcionarioService } from '../services/cadastroService';
 import { ocorrenciaService } from '../services/ocorrenciaService';
-import { dataParaApi, dataParaTexto, formatarDataApi, lerDataApi, textoParaData } from '../utils/datas';
+import {
+  dataParaApi,
+  dataParaTexto,
+  formatarDataApi,
+  lerDataApi,
+  textoParaData,
+} from '../utils/datas';
 import { mensagemErro, statusHttp } from '../utils/erros';
 
 export interface FormOcorrencia {
@@ -41,7 +47,9 @@ function paraFormulario(o: Ocorrencia): FormOcorrencia {
     tipoProblema: o.tipoProblema,
     mensagem: o.mensagem,
     status: o.status,
-    dataInicio: lerDataApi(o.dataInicio) ? formatarDataApi(o.dataInicio) : dataParaTexto(new Date()),
+    dataInicio: lerDataApi(o.dataInicio)
+      ? formatarDataApi(o.dataInicio)
+      : dataParaTexto(new Date()),
     dataFim: o.dataFim && lerDataApi(o.dataFim) ? formatarDataApi(o.dataFim) : '',
     estacaoId: o.estacaoId,
     funcionarioId: o.funcionarioId,
@@ -52,14 +60,19 @@ function paraFormulario(o: Ocorrencia): FormOcorrencia {
  * Funcionários vêm de GET /api/funcionarios (só ADMIN).
  * Se a API negar (403), usa os responsáveis que já aparecem nas ocorrências.
  */
-export async function carregarResponsaveis(): Promise<{ lista: Funcionario[]; origem: OrigemResponsaveis }> {
+export async function carregarResponsaveis(): Promise<{
+  lista: Funcionario[];
+  origem: OrigemResponsaveis;
+}> {
   try {
     return { lista: await funcionarioService.listar(), origem: 'api' };
   } catch (error) {
     if (statusHttp(error) !== 403) throw error;
     const ocorrencias = await ocorrenciaService.listar();
     const mapa = new Map<number, Funcionario>();
-    ocorrencias.forEach((o) => mapa.set(o.funcionarioId, { id: o.funcionarioId, nome: o.funcionario }));
+    ocorrencias.forEach((o) =>
+      mapa.set(o.funcionarioId, { id: o.funcionarioId, nome: o.funcionario }),
+    );
     const lista = [...mapa.values()];
     return { lista, origem: lista.length ? 'ocorrencias' : 'nenhuma' };
   }
@@ -71,11 +84,14 @@ function responsavelPadrao(lista: Funcionario[], sessao: Sessao): number {
   return lista[0]?.id ?? 0;
 }
 
-export function validarFormulario(form: FormOcorrencia): { payload: OcorrenciaPayload } | { erro: string } {
+export function validarFormulario(
+  form: FormOcorrencia,
+): { payload: OcorrenciaPayload } | { erro: string } {
   const tipoProblema = form.tipoProblema.trim();
   const mensagem = form.mensagem.trim();
   if (!tipoProblema) return { erro: 'Informe o tipo do problema.' };
-  if (tipoProblema.length > 100) return { erro: 'O tipo do problema pode ter no máximo 100 caracteres.' };
+  if (tipoProblema.length > 100)
+    return { erro: 'O tipo do problema pode ter no máximo 100 caracteres.' };
   if (!mensagem) return { erro: 'Descreva a ocorrência.' };
   if (!form.estacaoId) return { erro: 'Escolha a estação.' };
   if (!form.funcionarioId) return { erro: 'Escolha o responsável.' };
@@ -88,7 +104,8 @@ export function validarFormulario(form: FormOcorrencia): { payload: OcorrenciaPa
   if (form.dataFim.trim()) {
     fim = textoParaData(form.dataFim);
     if (!fim) return { erro: 'Encerramento inválido. Use DD/MM/AAAA HH:mm ou deixe vazio.' };
-    if (fim.getTime() < inicio.getTime()) return { erro: 'O encerramento não pode ser antes do início.' };
+    if (fim.getTime() < inicio.getTime())
+      return { erro: 'O encerramento não pode ser antes do início.' };
   }
 
   return {
@@ -104,7 +121,46 @@ export function validarFormulario(form: FormOcorrencia): { payload: OcorrenciaPa
   };
 }
 
-export function useOcorrenciaForm(id: number | undefined, sessao: Sessao) {
+export async function carregarDadosFormulario(
+  id: number | undefined,
+  sessao: Sessao,
+  estacaoInicial?: number,
+): Promise<{
+  estacoes: Estacao[];
+  responsaveis: Funcionario[];
+  origem: OrigemResponsaveis;
+  form: FormOcorrencia;
+}> {
+  const [estacoes, atual, { lista, origem }] = await Promise.all([
+    estacaoService.listar(),
+    id ? ocorrenciaService.buscar(id) : Promise.resolve(null),
+    carregarResponsaveis(),
+  ]);
+  if (!atual) {
+    return {
+      estacoes,
+      responsaveis: lista,
+      origem,
+      form: {
+        ...formularioVazio(),
+        estacaoId: estacaoInicial ?? 0,
+        funcionarioId: responsavelPadrao(lista, sessao),
+      },
+    };
+  }
+  // Na edição, garante que o responsável atual aparece mesmo que não venha na lista.
+  const faltaResponsavel = !lista.some((f) => f.id === atual.funcionarioId);
+  return {
+    estacoes,
+    responsaveis: faltaResponsavel
+      ? [...lista, { id: atual.funcionarioId, nome: atual.funcionario }]
+      : lista,
+    origem: origem === 'nenhuma' ? 'ocorrencias' : origem,
+    form: paraFormulario(atual),
+  };
+}
+
+export function useOcorrenciaForm(id: number | undefined, sessao: Sessao, estacaoInicial?: number) {
   const [form, setForm] = useState<FormOcorrencia>(formularioVazio);
   const [estacoes, setEstacoes] = useState<Estacao[]>([]);
   const [responsaveis, setResponsaveis] = useState<Funcionario[]>([]);
@@ -114,34 +170,36 @@ export function useOcorrenciaForm(id: number | undefined, sessao: Sessao) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  const carregar = useCallback(async () => {
+  const [tentativa, setTentativa] = useState(0);
+
+  // Busca estações, responsáveis e (na edição) a ocorrência; aplica o resultado no .then.
+  useEffect(() => {
+    let ativo = true;
+    carregarDadosFormulario(id, sessao, estacaoInicial)
+      .then((dados) => {
+        if (!ativo) return;
+        setErroCarga(null);
+        setEstacoes(dados.estacoes);
+        setResponsaveis(dados.responsaveis);
+        setOrigemResponsaveis(dados.origem);
+        setForm(dados.form);
+      })
+      .catch((error: unknown) => {
+        if (ativo) setErroCarga(mensagemErro(error));
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [id, sessao, estacaoInicial, tentativa]);
+
+  function recarregar() {
     setCarregando(true);
     setErroCarga(null);
-    try {
-      const [listaEstacoes, atual, { lista, origem }] = await Promise.all([
-        estacaoService.listar(),
-        id ? ocorrenciaService.buscar(id) : Promise.resolve(null),
-        carregarResponsaveis(),
-      ]);
-      // Na edição, garante que o responsável atual aparece mesmo que não venha na lista.
-      const listaFinal =
-        atual && !lista.some((f) => f.id === atual.funcionarioId)
-          ? [...lista, { id: atual.funcionarioId, nome: atual.funcionario }]
-          : lista;
-      setEstacoes(listaEstacoes);
-      setResponsaveis(listaFinal);
-      setOrigemResponsaveis(atual && origem === 'nenhuma' ? 'ocorrencias' : origem);
-      setForm(atual ? paraFormulario(atual) : { ...formularioVazio(), funcionarioId: responsavelPadrao(lista, sessao) });
-    } catch (error) {
-      setErroCarga(mensagemErro(error));
-    } finally {
-      setCarregando(false);
-    }
-  }, [id, sessao]);
-
-  useEffect(() => {
-    void carregar();
-  }, [carregar]);
+    setTentativa((t) => t + 1);
+  }
 
   function alterar<K extends keyof FormOcorrencia>(campo: K, valor: FormOcorrencia[K]) {
     setForm((atual) => ({ ...atual, [campo]: valor }));
@@ -187,7 +245,7 @@ export function useOcorrenciaForm(id: number | undefined, sessao: Sessao) {
     origemResponsaveis,
     carregando,
     erroCarga,
-    recarregar: carregar,
+    recarregar,
     salvando,
     erro,
     salvar,

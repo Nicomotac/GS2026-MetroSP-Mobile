@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { infoStatus } from '../model/Ocorrencia';
+import { fontes } from '../theme/tema';
 
 export function StatusBadge({ status }: { status: string }) {
   const info = infoStatus(status);
@@ -18,5 +19,5 @@ const estilos = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
   },
-  texto: { fontSize: 12, fontWeight: '700' },
+  texto: { fontSize: 12, fontFamily: fontes.semi },
 });

@@ -7,7 +7,8 @@
  */
 const URL_PADRAO = 'https://app-global-mobile-global-rm561857.azurewebsites.net';
 
-export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').trim().replace(/\/+$/, '') || URL_PADRAO;
+export const API_URL =
+  (process.env.EXPO_PUBLIC_API_URL ?? '').trim().replace(/\/+$/, '') || URL_PADRAO;
 
 /** Plano F1 do Azure pode levar até ~1 minuto no primeiro acesso. */
 export const TIMEOUT_PADRAO_MS = 45000;

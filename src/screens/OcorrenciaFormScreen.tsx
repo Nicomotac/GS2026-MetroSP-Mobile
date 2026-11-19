@@ -20,10 +20,14 @@ export function OcorrenciaFormScreen(props: TelaPilha<'OcorrenciaForm'>) {
   return <Formulario {...props} sessao={sessao} />;
 }
 
-function Formulario({ navigation, route, sessao }: TelaPilha<'OcorrenciaForm'> & { sessao: Sessao }) {
+function Formulario({
+  navigation,
+  route,
+  sessao,
+}: TelaPilha<'OcorrenciaForm'> & { sessao: Sessao }) {
   const id = route.params?.id;
   const insets = useSafeAreaInsets();
-  const f = useOcorrenciaForm(id, sessao);
+  const f = useOcorrenciaForm(id, sessao, route.params?.estacaoId);
   const [buscaEstacao, setBuscaEstacao] = useState('');
 
   useEffect(() => {
@@ -33,7 +37,9 @@ function Formulario({ navigation, route, sessao }: TelaPilha<'OcorrenciaForm'> &
   const estacaoEscolhida = f.estacoes.find((e) => e.id === f.form.estacaoId);
   const estacoesFiltradas = useMemo(() => {
     const termo = buscaEstacao.trim().toLowerCase();
-    const lista = termo ? f.estacoes.filter((e) => e.nome.toLowerCase().includes(termo)) : f.estacoes;
+    const lista = termo
+      ? f.estacoes.filter((e) => e.nome.toLowerCase().includes(termo))
+      : f.estacoes;
     return lista.slice(0, 60);
   }, [f.estacoes, buscaEstacao]);
 
@@ -50,7 +56,7 @@ function Formulario({ navigation, route, sessao }: TelaPilha<'OcorrenciaForm'> &
   }
 
   if (f.carregando) return <Carregando texto="Carregando estações e responsáveis..." />;
-  if (f.erroCarga) return <ErroTela mensagem={f.erroCarga} aoTentarDeNovo={() => void f.recarregar()} />;
+  if (f.erroCarga) return <ErroTela mensagem={f.erroCarga} aoTentarDeNovo={f.recarregar} />;
 
   return (
     <TelaComTeclado style={estilosBase.tela}>
@@ -67,7 +73,12 @@ function Formulario({ navigation, route, sessao }: TelaPilha<'OcorrenciaForm'> &
         />
         <View style={estilos.chips}>
           {TIPOS_PROBLEMA.map((tipo) => (
-            <Chip key={tipo} rotulo={tipo} ativo={f.form.tipoProblema === tipo} onPress={() => f.alterar('tipoProblema', tipo)} />
+            <Chip
+              key={tipo}
+              rotulo={tipo}
+              ativo={f.form.tipoProblema === tipo}
+              onPress={() => f.alterar('tipoProblema', tipo)}
+            />
           ))}
         </View>
 
@@ -84,12 +95,17 @@ function Formulario({ navigation, route, sessao }: TelaPilha<'OcorrenciaForm'> &
         </Text>
         {f.estacoes.length === 0 ? (
           <Text style={estilosBase.aviso}>
-            A tabela T_ESTACAO está vazia. Com o Flyway desligado, rode o arquivo V2__popular_estacoes_linha_azul.sql no
-            Oracle (e dê COMMIT) para ter estações.
+            A tabela T_ESTACAO está vazia. Com o Flyway desligado, rode o arquivo
+            V2__popular_estacoes_linha_azul.sql no Oracle (e dê COMMIT) para ter estações.
           </Text>
         ) : (
           <>
-            <Campo rotulo="Buscar estação" value={buscaEstacao} onChangeText={setBuscaEstacao} placeholder="Digite parte do nome" />
+            <Campo
+              rotulo="Buscar estação"
+              value={buscaEstacao}
+              onChangeText={setBuscaEstacao}
+              placeholder="Digite parte do nome"
+            />
             <View style={estilos.chips}>
               {estacoesFiltradas.map((e) => (
                 <Chip
@@ -106,20 +122,26 @@ function Formulario({ navigation, route, sessao }: TelaPilha<'OcorrenciaForm'> &
         <Text style={estilosBase.rotulo}>Responsável (funcionário)</Text>
         {f.origemResponsaveis === 'nenhuma' ? (
           <Text style={estilosBase.aviso}>
-            Nenhum funcionário disponível. A API só lista funcionários para ADMIN e ainda não existe ocorrência para usar
-            como referência. Entre com uma conta de funcionário ou ative APP_DEMO_ALL_USERS_ADMIN no Web App.
+            Nenhum funcionário disponível. A API só lista funcionários para ADMIN e ainda não existe
+            ocorrência para usar como referência. Entre com uma conta de funcionário ou ative
+            APP_DEMO_ALL_USERS_ADMIN no Web App.
           </Text>
         ) : (
           <>
             {f.origemResponsaveis === 'ocorrencias' && (
               <Text style={estilosBase.aviso}>
-                A API não liberou a lista de funcionários para a sua conta. Mostrando os responsáveis que já aparecem em
-                ocorrências.
+                A API não liberou a lista de funcionários para a sua conta. Mostrando os
+                responsáveis que já aparecem em ocorrências.
               </Text>
             )}
             <View style={estilos.chips}>
               {f.responsaveis.map((r) => (
-                <Chip key={r.id} rotulo={r.nome} ativo={f.form.funcionarioId === r.id} onPress={() => f.alterar('funcionarioId', r.id)} />
+                <Chip
+                  key={r.id}
+                  rotulo={r.nome}
+                  ativo={f.form.funcionarioId === r.id}
+                  onPress={() => f.alterar('funcionarioId', r.id)}
+                />
               ))}
             </View>
           </>
@@ -128,7 +150,13 @@ function Formulario({ navigation, route, sessao }: TelaPilha<'OcorrenciaForm'> &
         <Text style={estilosBase.rotulo}>Status</Text>
         <View style={estilos.chips}>
           {STATUS_OCORRENCIA.map((s) => (
-            <Chip key={s.valor} rotulo={s.rotulo} cor={s.cor} ativo={f.form.status === s.valor} onPress={() => f.alterarStatus(s.valor)} />
+            <Chip
+              key={s.valor}
+              rotulo={s.rotulo}
+              cor={s.cor}
+              ativo={f.form.status === s.valor}
+              onPress={() => f.alterarStatus(s.valor)}
+            />
           ))}
         </View>
 
@@ -142,7 +170,11 @@ function Formulario({ navigation, route, sessao }: TelaPilha<'OcorrenciaForm'> &
               keyboardType="number-pad"
             />
           </View>
-          <Botao titulo="Agora" variante="texto" onPress={() => f.alterar('dataInicio', dataParaTexto(new Date()))} />
+          <Botao
+            titulo="Agora"
+            variante="texto"
+            onPress={() => f.alterar('dataInicio', dataParaTexto(new Date()))}
+          />
         </View>
 
         <View style={estilos.linhaData}>

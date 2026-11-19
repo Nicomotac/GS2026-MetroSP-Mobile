@@ -16,7 +16,7 @@ export function OcorrenciaDetalheScreen({ navigation, route }: TelaPilha<'Ocorre
   const { id } = route.params;
   const insets = useSafeAreaInsets();
   const buscar = useCallback(() => ocorrenciaService.buscar(id), [id]);
-  const ocorrencia = useCarregamento(buscar, id);
+  const ocorrencia = useCarregamento(buscar);
   const [excluindo, setExcluindo] = useState(false);
   const [orientacao, setOrientacao] = useState<string | null>(null);
   const [erroOrientacao, setErroOrientacao] = useState<string | null>(null);
@@ -54,13 +54,21 @@ export function OcorrenciaDetalheScreen({ navigation, route }: TelaPilha<'Ocorre
       navigation.goBack();
     } catch (error) {
       setExcluindo(false);
-      Alert.alert('Não foi possível excluir', statusHttp(error) === 403 ? MENSAGEM_SEM_PERMISSAO : mensagemErro(error));
+      Alert.alert(
+        'Não foi possível excluir',
+        statusHttp(error) === 403 ? MENSAGEM_SEM_PERMISSAO : mensagemErro(error),
+      );
     }
   }
 
   if (ocorrencia.carregando && !ocorrencia.dados) return <Carregando />;
   if (!ocorrencia.dados) {
-    return <ErroTela mensagem={ocorrencia.erro ?? 'Ocorrência não encontrada.'} aoTentarDeNovo={ocorrencia.tentarDeNovo} />;
+    return (
+      <ErroTela
+        mensagem={ocorrencia.erro ?? 'Ocorrência não encontrada.'}
+        aoTentarDeNovo={ocorrencia.tentarDeNovo}
+      />
+    );
   }
   const o = ocorrencia.dados;
 
@@ -95,12 +103,24 @@ export function OcorrenciaDetalheScreen({ navigation, route }: TelaPilha<'Ocorre
           titulo="Conversar com o chatbot sobre ela"
           icone="chatbubbles-outline"
           variante="texto"
-          onPress={() => navigation.navigate('Abas', { screen: 'Chat', params: { ocorrenciaId: o.id } })}
+          onPress={() =>
+            navigation.navigate('Abas', { screen: 'Chat', params: { ocorrenciaId: o.id } })
+          }
         />
       </View>
 
-      <Botao titulo="Editar" icone="create-outline" onPress={() => navigation.navigate('OcorrenciaForm', { id: o.id })} />
-      <Botao titulo="Excluir" icone="trash-outline" variante="perigo" carregando={excluindo} onPress={confirmarExclusao} />
+      <Botao
+        titulo="Editar"
+        icone="create-outline"
+        onPress={() => navigation.navigate('OcorrenciaForm', { id: o.id })}
+      />
+      <Botao
+        titulo="Excluir"
+        icone="trash-outline"
+        variante="perigo"
+        carregando={excluindo}
+        onPress={confirmarExclusao}
+      />
       {!!ocorrencia.erro && <Text style={estilosBase.erro}>{ocorrencia.erro}</Text>}
     </ScrollView>
   );

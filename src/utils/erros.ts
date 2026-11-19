@@ -57,7 +57,9 @@ export function mensagemErro(error: unknown): string {
   if (corpo?.campos && typeof corpo.campos === 'object') {
     const campos = Object.entries(corpo.campos as Record<string, unknown>);
     if (campos.length) {
-      return campos.map(([campo, msg]) => `${NOMES_CAMPOS[campo] ?? campo}: ${String(msg)}`).join('\n');
+      return campos
+        .map(([campo, msg]) => `${NOMES_CAMPOS[campo] ?? campo}: ${String(msg)}`)
+        .join('\n');
     }
   }
   if (typeof corpo?.mensagem === 'string' && corpo.mensagem.trim()) return corpo.mensagem;

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { cores, espaco } from '../theme/tema';
+import { cores, espaco, fontes } from '../theme/tema';
 
 export type NomeIcone = ComponentProps<typeof Ionicons>['name'];
 
@@ -21,7 +21,14 @@ const COR_TEXTO = {
   texto: cores.azul,
 } as const;
 
-export function Botao({ titulo, onPress, variante = 'primario', icone, carregando, desabilitado }: Props) {
+export function Botao({
+  titulo,
+  onPress,
+  variante = 'primario',
+  icone,
+  carregando,
+  desabilitado,
+}: Props) {
   const bloqueado = desabilitado || carregando;
   const corTexto = COR_TEXTO[variante];
   return (
@@ -64,5 +71,5 @@ const estilos = StyleSheet.create({
   bloqueado: { opacity: 0.55 },
   pressionado: { opacity: 0.8 },
   conteudo: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm },
-  rotulo: { fontSize: 15, fontWeight: '700' },
+  rotulo: { fontSize: 15, fontFamily: fontes.semi },
 });

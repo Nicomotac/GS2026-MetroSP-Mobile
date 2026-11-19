@@ -49,7 +49,13 @@ export function CadastroScreen(_props: TelaPilha<'Cadastro'>) {
         <Text style={estilosBase.textoSecundario}>
           A conta é criada na API Java (tabela T_USUARIO) e você entra logo em seguida.
         </Text>
-        <Campo rotulo="Nome" value={nome} onChangeText={setNome} placeholder="Seu nome" maxLength={200} />
+        <Campo
+          rotulo="Nome"
+          value={nome}
+          onChangeText={setNome}
+          placeholder="Seu nome"
+          maxLength={200}
+        />
         <Campo
           rotulo="E-mail"
           value={email}
@@ -79,7 +85,12 @@ export function CadastroScreen(_props: TelaPilha<'Cadastro'>) {
           maxLength={72}
         />
         {!!erro && <Text style={estilosBase.erro}>{erro}</Text>}
-        <Botao titulo="Criar conta" icone="person-add-outline" carregando={enviando} onPress={() => void aoCadastrar()} />
+        <Botao
+          titulo="Criar conta"
+          icone="person-add-outline"
+          carregando={enviando}
+          onPress={() => void aoCadastrar()}
+        />
       </ScrollView>
     </TelaComTeclado>
   );

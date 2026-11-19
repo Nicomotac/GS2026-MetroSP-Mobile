@@ -1,25 +1,56 @@
-# MetroSP Ocorrências — App Mobile (Global Solution FIAP 2026/2)
+# MetroSP Ocorrências — App Mobile (Global Solution FIAP 2026/2 · CitizenTech)
 
 **Integrantes:** Nicolas Mota (RM561857) · Caio Kenzo (RM592979)
 
-App **React Native + TypeScript (Expo SDK 58)** ligado à API Java MetroSP publicada no Azure:
+- 🎥 **Vídeo:** COLE_AQUI_O_LINK_DO_YOUTUBE
+- ☕ **API Java (Azure):** https://app-global-mobile-global-rm561857.azurewebsites.net/swagger-ui.html
+- 📦 **Firebase App Distribution:** APK do perfil `preview`, com o professor como tester
 
-`https://app-global-mobile-global-rm561857.azurewebsites.net`
+App **React Native + TypeScript (Expo SDK 58)** para o cidadão registrar e acompanhar problemas nas estações do metrô de São Paulo (escada rolante parada, elevador, superlotação...) e tirar dúvidas com um **chatbot de IA**. Os dados ficam na API Java, nunca só no celular. A chave da OpenAI fica apenas no Web App.
 
-O passageiro cria a conta, entra e **cadastra, edita e exclui ocorrências** nas estações. Também conversa com o **chatbot de IA**, que usa a chave da OpenAI configurada no Web App. A chave nunca fica no app.
+## Telas (9 + Sobre o App)
 
-## Telas
+| #   | Tela                     | O que faz                                                           | API                                                                                  |
+| --- | ------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 1   | Login                    | Autenticação real com JWT                                           | `POST /api/auth/login`                                                               |
+| 2   | Criar conta              | Cadastro de passageiro com validação                                | `POST /api/auth/cadastro`                                                            |
+| 3   | Início                   | Painel com totais por status, atalhos e últimas ocorrências         | `GET /api/ocorrencias`                                                               |
+| 4   | Ocorrências              | Lista com filtro por estação e "puxar para atualizar" (**Read**)    | `GET /api/ocorrencias`                                                               |
+| 5   | Detalhe da ocorrência    | Dados completos, orientação da IA e exclusão (**Delete**)           | `GET /api/ocorrencias/{id}`, `GET …/{id}/orientacao`, `DELETE /api/ocorrencias/{id}` |
+| 6   | Nova / Editar ocorrência | Formulário validado (**Create** e **Update**)                       | `POST` e `PUT /api/ocorrencias`                                                      |
+| 7   | Estações                 | Estações com busca, total de ocorrências abertas e "registrar aqui" | `GET /api/estacoes`                                                                  |
+| 8   | Chatbot                  | Perguntas livres com contexto opcional de uma ocorrência            | `POST /api/chat`                                                                     |
+| 9   | Perfil                   | Dados da sessão e logout                                            | —                                                                                    |
+| —   | Sobre o App              | Versão, **hash do commit** e teste de conexão com a API             | `GET /actuator/health`                                                               |
 
-| Tela | O que faz | Endpoint |
-|---|---|---|
-| Login | Entra com e-mail e senha | `POST /api/auth/login` |
-| Criar conta | Cadastra passageiro e já entra | `POST /api/auth/cadastro` |
-| Ocorrências | Lista, filtra por estação, puxa para atualizar | `GET /api/ocorrencias` |
-| Detalhe | Mostra a ocorrência, pede orientação da IA, exclui | `GET /api/ocorrencias/{id}`, `GET …/{id}/orientacao`, `DELETE /api/ocorrencias/{id}` |
-| Nova / Editar | Formulário completo com estação, responsável, status e datas | `GET /api/estacoes`, `GET /api/funcionarios`, `POST` e `PUT /api/ocorrencias` |
-| Chatbot | Perguntas livres, com contexto opcional de uma ocorrência | `POST /api/chat` (com reserva em `…/orientacao`) |
-| Perfil | Dados da sessão, tipo de conta, sair | — |
-| Sobre o App | Versão, commit do build, URL da API e **teste de conexão** | `GET /actuator/health` |
+## Como os requisitos foram atendidos
+
+| Requisito              | Onde                                                                                                                                                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Telas e navegação   | React Navigation: pilha (`native-stack`) + abas (`bottom-tabs`) em `src/navigation/`. Rótulos de acessibilidade em botões, cartões e campos.                          |
+| 2. CRUD com a API Java | Axios em `src/services/` com JWT no cabeçalho; carregando, erro com "tentar de novo", alertas de sucesso e mensagens da API em todas as telas.                        |
+| 3. Autenticação        | Cadastro, login e logout em `src/context/AuthContext.tsx`. Token no `expo-secure-store`. Sem sessão, as telas logadas não existem na navegação; 401 encerra a sessão. |
+| 4. Identidade visual   | Cores do metrô em `src/theme/tema.ts`, fonte **Poppins** em `assets/fonts/` e logotipo e ícones em `assets/`.                                                         |
+| 5. Arquitetura         | Pastas por responsabilidade (abaixo), **ESLint** (`eslint-config-expo` + Prettier) e **Prettier** configurados.                                                       |
+| 7. Publicação          | `eas.json` (perfil `preview` gera APK) e hash do commit na tela Sobre o App (`app.config.js`).                                                                        |
+
+## Estrutura
+
+```
+App.tsx                  Carrega as fontes e monta os providers (SafeArea, Auth, Navigation)
+assets/                  Ícone, splash, logotipo e fonts/ (Poppins + licença OFL)
+src/
+├── config.ts            URL da API e timeouts
+├── model/               Tipos iguais aos DTOs da API Java
+├── services/            Acesso à API REST (Axios): api.ts, auth, ocorrências, estações, chat, status
+├── context/             AuthContext: sessão, login, cadastro, logout
+├── hooks/               Lógica das telas: carregamento, formulário de ocorrência, chat
+├── navigation/          Rotas: pilha (login ou app) + abas
+├── screens/             Telas (só interface)
+├── components/          Botão, campo, chip, cartão de ocorrência, status, estados de tela, teclado
+├── theme/               Cores, fontes e estilos base
+└── utils/               Datas (DD/MM/AAAA HH:mm ↔ LocalDateTime), JWT, mensagens de erro
+```
 
 ## Como rodar
 
@@ -28,43 +59,27 @@ npm install
 npx expo start --clear
 ```
 
-Leia o QR Code com o **Expo Go** (SDK 58) ou aperte `a` para abrir no emulador Android.
+Leia o QR Code com o **Expo Go** (SDK 58) ou aperte `a` para abrir no emulador Android. Sem `.env`, o app usa a API do Azure. Para trocar, copie `.env.example` para `.env`.
 
-- Sem `.env`, o app usa o Web App do Azure acima.
-- Para usar outra API, copie `.env.example` para `.env`, troque a URL e rode `npx expo start --clear`.
-- Na tela **Sobre o App**, confira a URL em uso e toque em **Testar conexão**.
+Qualidade de código:
 
-Typecheck: `npm run typecheck`.
+```bash
+npm run lint        # ESLint
+npm run format      # Prettier
+npm run typecheck   # TypeScript
+```
 
-## Gerar o APK
+## Publicação
 
 ```bash
 npx eas-cli@latest login
 npm run build:apk
 ```
 
-O perfil `preview` do `eas.json` já grava a URL do Azure no APK. O pacote Android continua `br.com.fiap.metrosp.mobile` (versionCode 2), então o Firebase App Distribution reconhece como atualização.
+Envie o APK ao **Firebase App Distribution** (app Android `br.com.fiap.metrosp.mobile`) e adicione o e-mail do professor como tester. Faça o commit antes do build: a tela Sobre o App mostra o hash do commit usado.
 
-## Estrutura
+## Pré-requisitos na API
 
-```
-App.tsx                  Providers (SafeArea, Auth, Navigation)
-src/
-├── config.ts            URL da API e timeouts
-├── model/               Tipos iguais aos DTOs da API Java
-├── services/            Axios: api.ts (JWT + 401), auth, ocorrências, estações/funcionários, chat, status
-├── context/             AuthContext (sessão no SecureStore)
-├── hooks/               Lógica das telas: carregamento, formulário de ocorrência, chat
-├── navigation/          Pilha (login ou app) + abas (Ocorrências, Chatbot, Perfil)
-├── screens/             Telas
-├── components/          Botão, campo, chip, status, estados de carregando/erro/vazio, teclado
-├── theme/               Cores e estilos base
-└── utils/               Datas (DD/MM/AAAA HH:mm ↔ LocalDateTime), JWT, mensagens de erro
-```
-
-## Pré-requisitos no lado da API
-
-1. **Chatbot:** adicione `ChatController.java` (entregue junto com este app) em `src/main/java/br/com/fiap/metrosp/controller/` e publique a API. Sem ele, `POST /api/chat` responde 404. O app avisa e usa a orientação por ocorrência no lugar.
-2. **CRUD pelo passageiro:** a API só libera `POST/PUT/DELETE /api/ocorrencias` para ADMIN. Funciona hoje porque o Web App tem `APP_DEMO_ALL_USERS_ADMIN=true`. Se desligar, o passageiro recebe 403 e o app explica o motivo.
-3. **Estações:** com `SPRING_FLYWAY_ENABLED=false`, rode `V2__popular_estacoes_linha_azul.sql` no Oracle (e `COMMIT`) se a `T_ESTACAO` estiver vazia.
-4. **Funcionário:** toda ocorrência precisa de um responsável (`funcionarioId`). A `T_FUNCIONARIO` precisa ter pelo menos um registro.
+1. `ChatController` publicado (`POST /api/chat`) para o chatbot de perguntas livres.
+2. CRUD de ocorrências por passageiros: o Web App precisa de `APP_DEMO_ALL_USERS_ADMIN=true` (a API libera escrita só para ADMIN).
+3. `T_ESTACAO` com estações e `T_FUNCIONARIO` com pelo menos um funcionário (responsável da ocorrência).

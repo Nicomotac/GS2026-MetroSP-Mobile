@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native';
-import { cores, espaco } from '../theme/tema';
+import { cores, espaco, fontes } from '../theme/tema';
 
 interface Props extends TextInputProps {
   rotulo: string;
@@ -11,6 +11,8 @@ export function Campo({ rotulo, dica, style, multiline, ...props }: Props) {
     <View style={estilos.bloco}>
       <Text style={estilos.rotulo}>{rotulo}</Text>
       <TextInput
+        accessibilityLabel={rotulo}
+        accessibilityHint={dica}
         placeholderTextColor={cores.textoSecundario}
         multiline={multiline}
         style={[estilos.input, multiline && estilos.multilinha, style]}
@@ -23,7 +25,7 @@ export function Campo({ rotulo, dica, style, multiline, ...props }: Props) {
 
 const estilos = StyleSheet.create({
   bloco: { gap: espaco.xs },
-  rotulo: { fontSize: 13, fontWeight: '600', color: cores.textoSecundario },
+  rotulo: { fontSize: 13, fontFamily: fontes.medio, color: cores.textoSecundario },
   input: {
     minHeight: 48,
     borderWidth: 1,
@@ -33,8 +35,9 @@ const estilos = StyleSheet.create({
     paddingVertical: espaco.sm,
     backgroundColor: cores.cartao,
     fontSize: 15,
+    fontFamily: fontes.regular,
     color: cores.texto,
   },
   multilinha: { minHeight: 110, textAlignVertical: 'top' },
-  dica: { fontSize: 12, color: cores.textoSecundario },
+  dica: { fontSize: 12, fontFamily: fontes.regular, color: cores.textoSecundario },
 });

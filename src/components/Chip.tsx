@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { cores, espaco } from '../theme/tema';
+import { cores, espaco, fontes } from '../theme/tema';
 
 interface Props {
   rotulo: string;
@@ -35,6 +35,6 @@ const estilos = StyleSheet.create({
     marginBottom: espaco.sm,
     maxWidth: 260,
   },
-  texto: { fontSize: 13, color: cores.texto, fontWeight: '600' },
+  texto: { fontSize: 13, color: cores.texto, fontFamily: fontes.medio },
   textoAtivo: { color: cores.branco },
 });

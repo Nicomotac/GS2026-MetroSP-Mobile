@@ -1,4 +1,13 @@
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Alert } from 'react-native';
 import type { Sessao } from '../model/Sessao';
 import { definirAoExpirarSessao } from '../services/api';

@@ -1,7 +1,7 @@
-import axios from 'axios';
+import { create } from 'axios';
 import { API_URL, TIMEOUT_PADRAO_MS } from '../config';
 
-export const api = axios.create({
+export const api = create({
   baseURL: API_URL,
   timeout: TIMEOUT_PADRAO_MS,
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },

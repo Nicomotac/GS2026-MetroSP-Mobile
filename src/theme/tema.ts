@@ -20,6 +20,14 @@ export const cores = {
 
 export const espaco = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 } as const;
 
+/** Família Poppins, carregada de assets/fonts no App.tsx. */
+export const fontes = {
+  regular: 'Poppins_400Regular',
+  medio: 'Poppins_500Medium',
+  semi: 'Poppins_600SemiBold',
+  negrito: 'Poppins_700Bold',
+} as const;
+
 export const estilosBase = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cores.fundo },
   conteudo: { padding: espaco.lg, gap: espaco.md },
@@ -31,17 +39,23 @@ export const estilosBase = StyleSheet.create({
     borderColor: cores.borda,
     gap: espaco.sm,
   },
-  titulo: { fontSize: 22, fontWeight: '700', color: cores.texto },
-  subtitulo: { fontSize: 16, fontWeight: '700', color: cores.texto },
-  texto: { fontSize: 15, color: cores.texto, lineHeight: 21 },
-  textoSecundario: { fontSize: 13, color: cores.textoSecundario },
-  rotulo: { fontSize: 13, fontWeight: '600', color: cores.textoSecundario, marginTop: espaco.xs },
+  titulo: { fontSize: 22, fontFamily: fontes.negrito, color: cores.texto },
+  subtitulo: { fontSize: 16, fontFamily: fontes.semi, color: cores.texto },
+  texto: { fontSize: 15, fontFamily: fontes.regular, color: cores.texto, lineHeight: 22 },
+  textoSecundario: { fontSize: 13, fontFamily: fontes.regular, color: cores.textoSecundario },
+  rotulo: {
+    fontSize: 13,
+    fontFamily: fontes.medio,
+    color: cores.textoSecundario,
+    marginTop: espaco.xs,
+  },
   erro: {
     color: cores.erro,
     backgroundColor: cores.erroFundo,
     padding: espaco.md,
     borderRadius: 10,
     fontSize: 14,
+    fontFamily: fontes.regular,
   },
   aviso: {
     color: cores.alerta,
@@ -49,7 +63,8 @@ export const estilosBase = StyleSheet.create({
     padding: espaco.md,
     borderRadius: 10,
     fontSize: 13,
-    lineHeight: 18,
+    fontFamily: fontes.regular,
+    lineHeight: 19,
   },
   linha: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm },
 });

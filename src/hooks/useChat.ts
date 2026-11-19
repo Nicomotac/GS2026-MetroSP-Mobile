@@ -49,7 +49,10 @@ export function useChat(ocorrenciaInicial: number | null) {
     try {
       const resposta = await ocorrenciaService.orientacao(id);
       adicionar('assistente', resposta.orientacao);
-      adicionar('sistema', `Resposta gerada pela orientação da ocorrência #${id} (GET /api/ocorrencias/${id}/orientacao).`);
+      adicionar(
+        'sistema',
+        `Resposta gerada pela orientação da ocorrência #${id} (GET /api/ocorrencias/${id}/orientacao).`,
+      );
     } catch (error) {
       adicionar('sistema', mensagemErro(error));
     }
@@ -76,7 +79,10 @@ export function useChat(ocorrenciaInicial: number | null) {
         adicionar('sistema', AVISO_SEM_ROTA);
         if (ocorrenciaId) await usarOrientacao(ocorrenciaId);
       } else if (statusHttp(error) === 401) {
-        adicionar('sistema', 'A API recusou o seu login (401). Saia e entre novamente; se continuar, a rota /api/chat pode não estar publicada.');
+        adicionar(
+          'sistema',
+          'A API recusou o seu login (401). Saia e entre novamente; se continuar, a rota /api/chat pode não estar publicada.',
+        );
       } else {
         adicionar('sistema', mensagemErro(error));
       }
