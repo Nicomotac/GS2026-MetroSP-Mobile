@@ -1,0 +1,117 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useMemo, useState } from 'react';
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Chip } from '../components/Chip';
+import { Carregando, ErroTela, Vazio } from '../components/EstadoTela';
+import { StatusBadge } from '../components/StatusBadge';
+import { useCarregamento } from '../hooks/useCarregamento';
+import type { Ocorrencia } from '../model/Ocorrencia';
+import type { TelaAba } from '../navigation/tipos';
+import { ocorrenciaService } from '../services/ocorrenciaService';
+import { cores, espaco, estilosBase } from '../theme/tema';
+import { formatarDataApi } from '../utils/datas';
+
+export function OcorrenciasScreen({ navigation }: TelaAba<'Ocorrencias'>) {
+  const lista = useCarregamento(ocorrenciaService.listar);
+  const [filtroEstacao, setFiltroEstacao] = useState<number | null>(null);
+
+  // Só mostra no filtro as estações que têm ocorrência.
+  const estacoes = useMemo(() => {
+    const mapa = new Map<number, string>();
+    (lista.dados ?? []).forEach((o) => mapa.set(o.estacaoId, o.estacao));
+    return [...mapa.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  }, [lista.dados]);
+
+  const visiveis = useMemo(
+    () => (lista.dados ?? []).filter((o) => filtroEstacao === null || o.estacaoId === filtroEstacao),
+    [lista.dados, filtroEstacao],
+  );
+
+  if (lista.carregando && !lista.dados) return <Carregando texto="Buscando ocorrências na API..." />;
+  if (lista.erro && !lista.dados) return <ErroTela mensagem={lista.erro} aoTentarDeNovo={lista.tentarDeNovo} />;
+
+  return (
+    <View style={estilosBase.tela}>
+      {estacoes.length > 1 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={estilos.filtros}>
+          <Chip rotulo="Todas" ativo={filtroEstacao === null} onPress={() => setFiltroEstacao(null)} />
+          {estacoes.map(([id, nome]) => (
+            <Chip key={id} rotulo={nome} ativo={filtroEstacao === id} onPress={() => setFiltroEstacao(id)} />
+          ))}
+        </ScrollView>
+      )}
+
+      {!!lista.erro && <Text style={[estilosBase.erro, estilos.erroTopo]}>{lista.erro}</Text>}
+
+      <FlatList
+        data={visiveis}
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={visiveis.length ? estilos.lista : estilos.listaVazia}
+        refreshControl={<RefreshControl refreshing={lista.atualizando} onRefresh={lista.atualizar} />}
+        ListEmptyComponent={<Vazio texto="Nenhuma ocorrência registrada. Toque no + para registrar a primeira." />}
+        renderItem={({ item }) => (
+          <ItemOcorrencia item={item} onPress={() => navigation.navigate('OcorrenciaDetalhe', { id: item.id })} />
+        )}
+      />
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Registrar ocorrência"
+        style={({ pressed }) => [estilos.botaoNovo, pressed && { opacity: 0.85 }]}
+        onPress={() => navigation.navigate('OcorrenciaForm')}
+      >
+        <Ionicons name="add" size={30} color={cores.branco} />
+      </Pressable>
+    </View>
+  );
+}
+
+function ItemOcorrencia({ item, onPress }: { item: Ocorrencia; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [estilosBase.cartao, pressed && { opacity: 0.85 }]}>
+      <View style={estilos.cabecalhoItem}>
+        <Text style={[estilosBase.subtitulo, estilos.flex]} numberOfLines={1}>
+          {item.tipoProblema}
+        </Text>
+        <StatusBadge status={item.status} />
+      </View>
+      <Text style={estilosBase.texto} numberOfLines={2}>
+        {item.mensagem}
+      </Text>
+      <View style={estilosBase.linha}>
+        <Ionicons name="train-outline" size={14} color={cores.textoSecundario} />
+        <Text style={estilosBase.textoSecundario}>{item.estacao}</Text>
+        <Ionicons name="time-outline" size={14} color={cores.textoSecundario} />
+        <Text style={estilosBase.textoSecundario}>{formatarDataApi(item.dataInicio)}</Text>
+      </View>
+      <Text style={estilosBase.textoSecundario}>
+        #{item.id} · Responsável: {item.funcionario}
+      </Text>
+    </Pressable>
+  );
+}
+
+const estilos = StyleSheet.create({
+  flex: { flex: 1 },
+  filtros: { paddingHorizontal: espaco.lg, paddingTop: espaco.md },
+  erroTopo: { marginHorizontal: espaco.lg, marginTop: espaco.sm },
+  lista: { padding: espaco.lg, gap: espaco.md, paddingBottom: 96 },
+  listaVazia: { flexGrow: 1 },
+  cabecalhoItem: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm },
+  botaoNovo: {
+    position: 'absolute',
+    right: espaco.lg,
+    bottom: espaco.lg,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: cores.azul,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+  },
+});

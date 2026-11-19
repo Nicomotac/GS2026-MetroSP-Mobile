@@ -1,18 +1,22 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import Text from './ThemedText';
+import { StyleSheet, Text, View } from 'react-native';
 import { infoStatus } from '../model/Ocorrencia';
 
-export default function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status }: { status: string }) {
   const info = infoStatus(status);
   return (
-    <View style={[styles.badge, { backgroundColor: info.cor }]}>
-      <Text style={styles.texto}>{info.rotulo}</Text>
+    <View style={[estilos.badge, { backgroundColor: `${info.cor}1A`, borderColor: info.cor }]}>
+      <Text style={[estilos.texto, { color: info.cor }]}>{info.rotulo}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  badge: { alignSelf: 'flex-start', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 },
-  texto: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
+const estilos = StyleSheet.create({
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  texto: { fontSize: 12, fontWeight: '700' },
 });

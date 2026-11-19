@@ -1,81 +1,75 @@
 import * as SecureStore from 'expo-secure-store';
-import type { CadastroUsuario, Credenciais, Perfil, Usuario } from '../model/Usuario';
+import type { LoginResponse, Perfil, Sessao } from '../model/Sessao';
+import { lerJwt } from '../utils/jwt';
 import { api, definirToken } from './api';
 
-const CHAVE_SESSAO = 'metrosp_sessao';
+const CHAVE_SESSAO = 'metrosp.sessao';
 
-type LoginResponse = { token: string; tipo: string; perfil: Perfil; id: number; nome: string };
+function montarSessao(resposta: LoginResponse, email: string): Sessao {
+  const jwt = lerJwt(resposta.token);
+  // O "sub" do JWT diz quem a pessoa é de verdade, mesmo em modo demonstração.
+  let conta: Perfil = resposta.perfil;
+  if (jwt?.sub?.startsWith('ADMIN:')) conta = 'ADMIN';
+  if (jwt?.sub?.startsWith('USER:')) conta = 'USER';
+  return {
+    token: resposta.token,
+    id: resposta.id,
+    nome: resposta.nome,
+    email,
+    perfil: resposta.perfil,
+    conta,
+    expiraEm: jwt?.exp ? jwt.exp * 1000 : Date.now() + 60 * 60 * 1000,
+  };
+}
 
-export const authService = {
-  /** POST /api/auth/login — a API valida a senha e devolve JWT + perfil (ADMIN | USER). */
-  async entrar({ email, senha }: Credenciais): Promise<Usuario> {
-    const emailNormalizado = email.trim().toLowerCase();
-    const { data } = await api.post<LoginResponse>('/api/auth/login', {
-      email: emailNormalizado,
-      senha,
-    });
-    const usuario: Usuario = {
-      id: data.id,
-      nome: data.nome,
-      perfil: data.perfil,
-      token: data.token,
-      email: emailNormalizado,
-    };
-    await this.salvarSessao(usuario);
-    return usuario;
-  },
+async function salvarSessao(sessao: Sessao) {
+  definirToken(sessao.token);
+  await SecureStore.setItemAsync(CHAVE_SESSAO, JSON.stringify(sessao));
+}
 
-  /** POST /api/auth/cadastro — cria passageiro (USER) e já faz login. */
-  async cadastrar(dados: CadastroUsuario): Promise<Usuario> {
-    await api.post('/api/auth/cadastro', dados);
-    return this.entrar({ email: dados.email, senha: dados.senha });
-  },
+async function entrar(email: string, senha: string): Promise<Sessao> {
+  const emailNormalizado = email.trim().toLowerCase();
+  const { data } = await api.post<LoginResponse>('/api/auth/login', {
+    email: emailNormalizado,
+    senha,
+  });
+  const sessao = montarSessao(data, emailNormalizado);
+  await salvarSessao(sessao);
+  return sessao;
+}
 
-  // Guarda apenas o token e os dados públicos no armazenamento seguro (nunca a senha).
-  async salvarSessao(usuario: Usuario): Promise<void> {
-    definirToken(usuario.token);
-    await SecureStore.setItemAsync(CHAVE_SESSAO, JSON.stringify(usuario));
-  },
+/** POST /api/auth/cadastro cria um passageiro (USER); em seguida faz o login. */
+async function cadastrar(nome: string, email: string, senha: string): Promise<Sessao> {
+  const emailNormalizado = email.trim().toLowerCase();
+  await api.post('/api/auth/cadastro', { nome: nome.trim(), email: emailNormalizado, senha });
+  return entrar(emailNormalizado, senha);
+}
 
-  async carregarSessao(): Promise<Usuario | null> {
-    const raw = await SecureStore.getItemAsync(CHAVE_SESSAO);
-    if (!raw) return null;
-    const usuario = JSON.parse(raw) as Usuario;
-    if (tokenExpirado(usuario.token)) {
-      await this.sair();
+async function sair(): Promise<void> {
+  definirToken(null);
+  try {
+    await SecureStore.deleteItemAsync(CHAVE_SESSAO);
+  } catch {
+    // nada salvo: ignorar
+  }
+}
+
+/** Recupera a sessão salva; descarta se o token já venceu (ou vence em menos de 1 minuto). */
+async function carregarSessao(): Promise<Sessao | null> {
+  try {
+    const salvo = await SecureStore.getItemAsync(CHAVE_SESSAO);
+    if (!salvo) return null;
+    const sessao = JSON.parse(salvo) as Sessao;
+    if (!sessao.token || sessao.expiraEm <= Date.now() + 60_000) {
+      await sair();
       return null;
     }
-    definirToken(usuario.token);
-    return usuario;
-  },
-
-  async sair(): Promise<void> {
-    definirToken(null);
-    await SecureStore.deleteItemAsync(CHAVE_SESSAO);
-  },
-};
-
-/** Lê o campo exp do JWT sem depender de atob (que pode não existir no Hermes). */
-function tokenExpirado(jwt: string): boolean {
-  const parte = jwt.split('.')[1];
-  if (!parte) return true;
-
-  const alfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  let acumulador = 0;
-  let bits = 0;
-  let texto = '';
-  for (const caractere of parte.replace(/-/g, '+').replace(/_/g, '/').replace(/=+$/, '')) {
-    const valor = alfabeto.indexOf(caractere);
-    if (valor < 0) return true;
-    acumulador = (acumulador << 6) | valor;
-    bits += 6;
-    if (bits >= 8) {
-      bits -= 8;
-      texto += String.fromCharCode((acumulador >> bits) & 255);
-    }
+    definirToken(sessao.token);
+    return sessao;
+  } catch {
+    await sair();
+    return null;
   }
-
-  const expiracao = /"exp"\s*:\s*(\d+)/.exec(texto);
-  if (!expiracao) return true;
-  return Number(expiracao[1]) * 1000 <= Date.now();
 }
+
+export const authService = { entrar, cadastrar, sair, carregarSessao };

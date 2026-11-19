@@ -1,6 +1,6 @@
 const { execFileSync } = require('node:child_process');
 
-// Injeta o hash do commit de referência exibido na tela "Sobre o App".
+// Injeta o hash do commit exibido na tela "Sobre o App".
 module.exports = ({ config }) => {
   let commitHash = process.env.EAS_BUILD_GIT_COMMIT_HASH;
 

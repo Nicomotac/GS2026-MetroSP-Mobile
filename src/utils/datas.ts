@@ -1,25 +1,56 @@
+import type { DataApi } from '../model/Ocorrencia';
+
 const doisDigitos = (n: number) => String(n).padStart(2, '0');
 
-/** "2026-11-17T14:00:00" → "17/11/2026 14:00" */
-export function formatarDataHora(iso?: string | null): string {
-  if (!iso) return '—';
-  const data = new Date(iso);
-  if (Number.isNaN(data.getTime())) return iso;
+/**
+ * Lê o LocalDateTime da API como horário local.
+ * Aceita "2026-11-19T14:00:00", "2026-11-19T14:00:00.123" e o formato array [2026, 11, 19, 14, 0].
+ */
+export function lerDataApi(valor: DataApi | null | undefined): Date | null {
+  if (valor == null) return null;
+  if (Array.isArray(valor)) {
+    const [ano, mes, dia, hora = 0, minuto = 0, segundo = 0] = valor;
+    if (!ano || !mes || !dia) return null;
+    return new Date(ano, mes - 1, dia, hora, minuto, segundo);
+  }
+  const partes = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/.exec(valor);
+  if (!partes) return null;
+  const [, ano, mes, dia, hora, minuto, segundo] = partes;
+  return new Date(
+    Number(ano),
+    Number(mes) - 1,
+    Number(dia),
+    Number(hora),
+    Number(minuto),
+    Number(segundo ?? 0),
+  );
+}
+
+/** Date → "19/11/2026 14:00" */
+export function dataParaTexto(data: Date): string {
   return `${doisDigitos(data.getDate())}/${doisDigitos(data.getMonth() + 1)}/${data.getFullYear()} ${doisDigitos(data.getHours())}:${doisDigitos(data.getMinutes())}`;
 }
 
-/** "17/11/2026 14:00" → "2026-11-17T14:00:00" (formato LocalDateTime da API) ou null. */
-export function paraDataApi(texto: string): string | null {
-  const m = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/.exec(texto.trim());
-  if (!m) return null;
-  const [, dd, mm, aaaa, hh, min] = m.map(Number);
-  const data = new Date(aaaa, mm - 1, dd, hh, min);
-  if (data.getDate() !== dd || data.getMonth() !== mm - 1 || hh > 23 || min > 59) return null;
-  return `${aaaa}-${doisDigitos(mm)}-${doisDigitos(dd)}T${doisDigitos(hh)}:${doisDigitos(min)}:00`;
+/** Valor da API → "19/11/2026 14:00" (ou "—"). */
+export function formatarDataApi(valor: DataApi | null | undefined): string {
+  const data = lerDataApi(valor);
+  return data ? dataParaTexto(data) : '—';
 }
 
-export function agoraFormatado(): string {
-  return formatarDataHora(new Date().toISOString());
+/** "19/11/2026 14:00" → Date, ou null se a data não existir. */
+export function textoParaData(texto: string): Date | null {
+  const partes = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/.exec(texto.trim());
+  if (!partes) return null;
+  const [dia, mes, ano, hora, minuto] = partes.slice(1).map(Number);
+  if (hora > 23 || minuto > 59) return null;
+  const data = new Date(ano, mes - 1, dia, hora, minuto, 0);
+  if (data.getDate() !== dia || data.getMonth() !== mes - 1) return null;
+  return data;
+}
+
+/** Date → "2026-11-19T14:00:00" (LocalDateTime esperado pela API, sem fuso). */
+export function dataParaApi(data: Date): string {
+  return `${data.getFullYear()}-${doisDigitos(data.getMonth() + 1)}-${doisDigitos(data.getDate())}T${doisDigitos(data.getHours())}:${doisDigitos(data.getMinutes())}:00`;
 }
 
 /** Máscara DD/MM/AAAA HH:mm enquanto o usuário digita. */

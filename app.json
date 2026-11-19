@@ -2,30 +2,31 @@
   "expo": {
     "name": "MetroSP Ocorrências",
     "slug": "metrosp-mobile",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
     "splash": {
-      "image": "./src/assets/splash-icon.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#0B1F4D"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "br.com.fiap.metrosp.mobile"
     },
     "android": {
+      "package": "br.com.fiap.metrosp.mobile",
+      "versionCode": 2,
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B1F4D"
       },
-      "predictiveBackGestureEnabled": false,
-      "package": "br.com.fiap.metrosp.mobile",
-      "versionCode": 1
+      "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./src/assets/favicon.png"
+      "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-secure-store", "expo-font"]
+    "plugins": ["expo-secure-store"]
   }
 }

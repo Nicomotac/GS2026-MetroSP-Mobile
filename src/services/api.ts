@@ -1,15 +1,13 @@
-import { create, isAxiosError } from 'axios';
+import axios from 'axios';
+import { API_URL, TIMEOUT_PADRAO_MS } from '../config';
 
-export const API_URL =
-  process.env.EXPO_PUBLIC_API_URL?.trim() || 'https://app-global-mobile-global-rm561857.azurewebsites.net';
-
-export const api = create({
+export const api = axios.create({
   baseURL: API_URL,
-  timeout: 30000, // Azure F1 pode demorar no primeiro acesso
-  headers: { 'Content-Type': 'application/json' },
+  timeout: TIMEOUT_PADRAO_MS,
+  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 });
 
-// Token JWT da sessão atual (mantido em memória; persistido pelo authService no SecureStore).
+// Token JWT da sessão atual (persistido pelo authService no SecureStore).
 let token: string | null = null;
 let aoExpirarSessao: (() => void) | null = null;
 
@@ -21,6 +19,11 @@ export function definirAoExpirarSessao(callback: (() => void) | null) {
   aoExpirarSessao = callback;
 }
 
+// Rotas em que um 401 não deve derrubar a sessão:
+// - login/cadastro: 401 significa senha errada;
+// - chat: se a rota não existir na API publicada, a resposta pode vir como 401/404.
+const ROTAS_SEM_LOGOUT = ['/api/auth/', '/login', '/api/chat'];
+
 api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
@@ -29,30 +32,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const rotaAuth = String(error?.config?.url ?? '').includes('/api/auth/');
-    if (error?.response?.status === 401 && token && !rotaAuth) aoExpirarSessao?.();
+    const url = String(error?.config?.url ?? '');
+    const ignorar = ROTAS_SEM_LOGOUT.some((rota) => url.startsWith(rota));
+    if (error?.response?.status === 401 && token && !ignorar) aoExpirarSessao?.();
     return Promise.reject(error);
   },
 );
-
-/** Converte o ErroApi do backend (ou falha de rede) em mensagem para o usuário. */
-export function mensagemErroApi(error: unknown): string {
-  if (isAxiosError(error)) {
-    const data = error.response?.data as
-      { mensagem?: string; campos?: Record<string, string> | null } | undefined;
-    const campos = data?.campos ? Object.entries(data.campos) : [];
-    if (campos.length) return campos.map(([campo, msg]) => `${campo}: ${msg}`).join('\n');
-    if (data?.mensagem) return data.mensagem;
-    const status = error.response?.status;
-    if (status === 401) return 'E-mail ou senha inválidos.';
-    if (status === 403) return 'Seu perfil não possui permissão para esta operação.';
-    if (status === 404) return 'Registro não encontrado.';
-    if (status === 409) return 'Já existe um registro com esses dados.';
-    if (status === 503) return 'Serviço indisponível no momento. Tente novamente.';
-    if (error.code === 'ECONNABORTED') return 'A API não respondeu no tempo esperado.';
-    if (error.code === 'ERR_NETWORK')
-      return 'Não foi possível conectar à API. Verifique sua conexão.';
-    return 'Não foi possível concluir a operação com a API.';
-  }
-  return 'Não foi possível concluir a operação com a API.';
-}
