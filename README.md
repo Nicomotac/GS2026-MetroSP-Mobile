@@ -5,7 +5,7 @@ INTEGRANTES: Nicolas Mota (RM561857) · Caio Kenzo (RM592979)
 Aplicativo **React Native + TypeScript (Expo)** que aproxima o passageiro da operação do Metrô de São Paulo. O cidadão consulta ocorrências por estação (escadas paradas, elevadores, superlotação, falhas) e recebe **orientação gerada por IA** (Spring AI) a partir de cada ocorrência real. Os funcionários (perfil **ADMIN**) registram e acompanham os problemas até a resolução.
 
 - 🎥 Vídeo: **PENDENTE**
-- ☕ Backend: API Java: ** PENDENTE **
+- ☕ Backend: API Java: https://app-global-mobile-global-rm561857.azurewebsites.net/swagger-ui/index.html
 
 ## Perfis
 
