@@ -20,7 +20,7 @@ Este documento acompanha o código-fonte e serve como roteiro de validação. **
 - `POST /api/auth/login` — recebe JWT, `perfil` e identificador.
 - `GET /api/ocorrencias`, `POST /api/ocorrencias`, `PUT /api/ocorrencias/{id}`, `DELETE /api/ocorrencias/{id}` — CRUD ADMIN; GET público.
 - `GET /api/estacoes`, `POST /api/estacoes`, `PUT /api/estacoes/{id}`, `DELETE /api/estacoes/{id}` — CRUD ADMIN; GET público.
-- `GET /api/ocorrencias/{id}/orientacao` — Spring AI no backend. **A chave OpenAI nunca é enviada pelo mobile.**
+- `GET /api/ocorrencias/{id}/orientacao` e novo `POST /api/chat` (após deploy da cópia Java) — Spring AI no backend. **A chave OpenAI nunca é enviada pelo mobile.**
 
 A integração foi confrontada com o contrato em: https://github.com/Nicomotac/metrosp-global-solution-api/blob/main/docs/INTEGRACAO-MOBILE.md
 
@@ -41,3 +41,6 @@ A integração foi confrontada com o contrato em: https://github.com/Nicomotac/m
 - No arquivo `ENTREGA.txt` e na tela Sobre o App consta o RM do segundo integrante **conforme o ZIP original**; confira os dados antes de entregar.
 - O PDF exige histórico Git coerente. Faça commits com mudanças reais, não fabrique a sequência artificialmente.
 - Prazo da FIAP no PDF: **19/11/2026, às 23h55**.
+
+
+A implementação complementar do chat livre exige publicar `POST /api/chat` no Java. Veja `docs/GUIA-CHAT-E-CRUD.md`.

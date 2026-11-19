@@ -121,6 +121,7 @@ export function useOcorrenciaFormulario() {
         onPress: async () => {
           try {
             await excluir.mutateAsync(id);
+            Alert.alert('Ocorrência excluída', 'O registro foi removido da API.');
           } catch (error) {
             Alert.alert('Não foi possível excluir', mensagemErroApi(error));
           }

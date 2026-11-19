@@ -1,7 +1,7 @@
 import { create, isAxiosError } from 'axios';
 
 export const API_URL =
-  process.env.EXPO_PUBLIC_API_URL?.trim() || 'https://app-global-mobile-rm561859.azurewebsites.net';
+  process.env.EXPO_PUBLIC_API_URL?.trim() || 'https://app-global-mobile-global-rm561857.azurewebsites.net';
 
 export const api = create({
   baseURL: API_URL,
